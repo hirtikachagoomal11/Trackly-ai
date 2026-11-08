@@ -1,0 +1,22 @@
+# Python runtime files
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+instance/
+
+# Local database and SQLite journal files (seeded demo data is created automatically)
+trackly.db
+trackly.db-*
+*.sqlite
+*.sqlite3
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+!.env.example

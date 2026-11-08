@@ -1,0 +1,377 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6c4df6">
+
+  <title>
+    {{ "Create account" if mode == "register" else "Sign in" }} · Trackly AI
+  </title>
+
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body class="auth-page">
+
+  <main class="auth-layout">
+
+    <!-- LEFT SIDE: BRANDING -->
+    <aside class="auth-showcase" aria-label="Trackly AI introduction">
+
+      <a class="brand auth-brand" href="{{ url_for('login') }}">
+        <span class="brand-mark" aria-hidden="true">✓</span>
+        <span>trackly<span class="brand-dot"> ai</span></span>
+      </a>
+
+      <div class="auth-showcase-content">
+
+        <span class="auth-orbit auth-orbit-one"></span>
+        <span class="auth-orbit auth-orbit-two"></span>
+
+        <div class="auth-showcase-kicker">
+          YOUR NEXT CHAPTER STARTS HERE
+        </div>
+
+        <h2>
+          Make room for<br>
+          what <span>you can do.</span>
+        </h2>
+
+        <p>
+          Bring your projects, career goals, and daily progress
+          into one calm, colorful workspace.
+        </p>
+
+        <div class="auth-feature-list">
+          <div>
+            <span>✦</span>
+            <strong>Turn ideas into momentum</strong>
+          </div>
+          <div>
+            <span>▦</span>
+            <strong>See every goal at a glance</strong>
+          </div>
+          <div>
+            <span>↗</span>
+            <strong>Build your next opportunity</strong>
+          </div>
+        </div>
+
+        <div class="auth-showcase-note">
+          <span class="auth-note-dot"></span>
+          A little progress adds up.
+        </div>
+
+      </div>
+
+      <div class="auth-showcase-glow" aria-hidden="true"></div>
+
+    </aside>
+
+    <!-- RIGHT SIDE: AUTHENTICATION -->
+    <section class="auth-content">
+
+      <div class="auth-card card">
+
+        <div class="auth-hero-mark" aria-hidden="true">
+          {{ "✦" if mode == "register" else "↗" }}
+        </div>
+
+        <div class="section-kicker">
+          {{ "A FRESH START, MADE PERSONAL"
+             if mode == "register"
+             else "WELCOME BACK TO YOUR WORKSPACE" }}
+        </div>
+
+        <h1>
+          {{ "Create your account"
+             if mode == "register"
+             else "Welcome back" }}
+        </h1>
+
+        <p class="auth-subtitle">
+          {{ "Set up your personal space and start making progress."
+             if mode == "register"
+             else "Sign in to pick up where you left off." }}
+        </p>
+
+        <!-- FLASH MESSAGES -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-list" role="status" aria-live="polite">
+              {% for category, message in messages %}
+                <p class="flash {{ category }}">{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- AUTH FORM -->
+        <form method="post" class="auth-form">
+
+          <input type="hidden"
+                 name="csrf_token"
+                 value="{{ csrf_token() }}">
+
+          {% if mode == "register" %}
+
+            <!-- FULL NAME -->
+            <div class="field">
+             <label for="email">DEMO LOGIN TEST</label>
+
+              <input
+                id="full-name"
+                name="full_name"
+                type="text"
+                required
+                maxlength="100"
+                autocomplete="name"
+                value="{{ request.form.get('full_name', '') }}"
+                placeholder="Your full name">
+            </div>
+
+            <!-- REGISTRATION EMAIL -->
+            <div class="field">
+              <label for="email">Email address</label>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                maxlength="254"
+                autocomplete="email"
+                value="{{ request.form.get('email', '') }}"
+                placeholder="you@example.com">
+            </div>
+
+          {% else %}
+
+            <!-- LOGIN EMAIL: DEMO PRE-FILLED -->
+            <div class="field">
+              <label for="email">Email or username</label>
+
+              <input
+                id="email"
+                name="email"
+                type="text"
+                required
+                maxlength="254"
+                autocomplete="username"
+                value="{{ request.form.get('email', 'demo@trackly.ai') }}"
+                placeholder="Enter email or username">
+            </div>
+
+          {% endif %}
+
+          <!-- PASSWORD -->
+          <div class="field">
+
+            <label for="password">Password</label>
+
+            <div class="password-wrap">
+
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                minlength="{{ 10 if mode == 'register' else 1 }}"
+                maxlength="128"
+                autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}"
+                value="{{ '' if mode == 'register' or request.method == 'POST' else 'TracklyDemo2026!' }}"
+                placeholder="{{ 'At least 10 characters' if mode == 'register' else 'Enter your password' }}">
+
+              <button
+                type="button"
+                class="toggle-password"
+                aria-label="Show password"
+                aria-controls="password">
+                Show
+              </button>
+
+            </div>
+
+            {% if mode == "register" %}
+
+              <!-- PASSWORD STRENGTH -->
+              <div class="password-strength" aria-live="polite">
+
+                <div
+                  class="strength-bar"
+                  role="progressbar"
+                  aria-label="Password strength"
+                  aria-valuemin="0"
+                  aria-valuemax="5"
+                  aria-valuenow="0">
+                  <span></span>
+                </div>
+
+                <small class="strength-label">
+                  Use 10 or more characters for a stronger password.
+                </small>
+
+              </div>
+
+            {% endif %}
+
+          </div>
+
+          {% if mode == "register" %}
+
+            <!-- CONFIRM PASSWORD -->
+            <div class="field">
+
+              <label for="confirm-password">
+                Confirm password
+              </label>
+
+              <div class="password-wrap">
+
+                <input
+                  id="confirm-password"
+                  name="confirm_password"
+                  type="password"
+                  required
+                  minlength="10"
+                  maxlength="128"
+                  autocomplete="new-password"
+                  placeholder="Enter your password again">
+
+                <button
+                  type="button"
+                  class="toggle-password"
+                  aria-label="Show password"
+                  aria-controls="confirm-password">
+                  Show
+                </button>
+
+              </div>
+
+            </div>
+
+          {% else %}
+
+            <!-- REMEMBER ME -->
+            <label class="remember-me">
+              <input type="checkbox" name="remember_me">
+              <span>Remember me</span>
+            </label>
+
+          {% endif %}
+
+          <!-- SUBMIT -->
+          <button
+            class="primary-button auth-submit"
+            type="submit">
+
+            {{ "Create account"
+               if mode == "register"
+               else "Sign in to Trackly" }}
+
+          </button>
+
+        </form>
+
+        <!-- LOGIN / REGISTRATION SWITCH -->
+        <p class="auth-switch">
+
+          {% if mode == "register" %}
+
+            Already have an account?
+            <a href="{{ url_for('login') }}">Sign in</a>
+
+          {% else %}
+
+            Don't have an account?
+            <a href="{{ url_for('register') }}">Create an account</a>
+
+          {% endif %}
+
+        </p>
+
+        <div class="auth-divider">
+          <span>PRIVATE BY DESIGN</span>
+        </div>
+
+        <p class="auth-security">
+          Your workspace is stored in this Trackly SQLite database.
+          Keep the database file private.
+        </p>
+
+      </div>
+
+      <p class="auth-mobile-tagline">
+        Plan smarter. Track better. Achieve more.
+      </p>
+
+    </section>
+
+  </main>
+
+  <!-- PASSWORD STRENGTH SCRIPT -->
+  {% if mode == "register" %}
+  <script>
+    const passwordInput = document.getElementById("password");
+    const strengthBar = document.querySelector(".strength-bar");
+    const strengthFill = strengthBar.querySelector("span");
+    const strengthLabel = document.querySelector(".strength-label");
+
+    const strengthNames = [
+      "Very weak",
+      "Weak",
+      "Fair",
+      "Good",
+      "Strong"
+    ];
+
+    passwordInput.addEventListener("input", () => {
+      const value = passwordInput.value;
+      let score = 0;
+
+      if (value.length >= 10) score++;
+      if (value.length >= 14) score++;
+      if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score++;
+      if (/\d/.test(value)) score++;
+      if (/[^A-Za-z0-9]/.test(value)) score++;
+
+      strengthBar.setAttribute("aria-valuenow", String(score));
+      strengthFill.style.width = `${score * 20}%`;
+      strengthFill.dataset.strength = String(score);
+
+      strengthLabel.textContent = value
+        ? `Password strength: ${strengthNames[Math.max(0, score - 1)]}`
+        : "Use 10 or more characters for a stronger password.";
+    });
+  </script>
+  {% endif %}
+
+  <!-- SHOW / HIDE PASSWORD -->
+  <script>
+    document.querySelectorAll(".toggle-password").forEach((button) => {
+      button.addEventListener("click", () => {
+
+        const input = document.getElementById(
+          button.getAttribute("aria-controls")
+        );
+
+        const isHidden = input.type === "password";
+
+        input.type = isHidden ? "text" : "password";
+
+        button.textContent = isHidden ? "Hide" : "Show";
+
+        button.setAttribute(
+          "aria-label",
+          `${isHidden ? "Hide" : "Show"} password`
+        );
+
+      });
+    });
+  </script>
+
+</body>
+</html>

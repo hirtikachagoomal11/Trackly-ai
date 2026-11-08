@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6c4df6">
+  <meta name="csrf-token" content="{{ csrf_token_value }}">
+  <title>Trackly AI — Plan Smarter. Track Better.</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/vendor/chart.umd.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#overview" aria-label="Trackly home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 36 36" role="img">
+            <path d="M5 18.5 13.2 27 31 8.5" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M7 9h9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>trackly<span class="brand-dot"> ai</span></span>
+      </a>
+      <div class="sidebar-caption">WORKSPACE</div>
+      <nav class="side-nav" aria-label="Main navigation">
+        <a class="nav-link active" href="#overview"><span>⌂</span> Overview</a>
+        <a class="nav-link" href="#projects"><span>▦</span> Projects</a>
+        <a class="nav-link" href="#calendar"><span>▦</span> Calendar</a>
+        <a class="nav-link" href="#kanban"><span>▤</span> Kanban board</a>
+        <a class="nav-link" href="#applications"><span>↗</span> Applications</a>
+        <a class="nav-link" href="#insights"><span>▥</span> Insights</a>
+        <a class="nav-link" href="#career-assistant"><span>✦</span> AI Career Assistant</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="focus-card">
+          <span class="focus-spark">✦</span>
+          <strong>Small steps add up.</strong>
+          <p>Keep showing up for your goals.</p>
+        </div>
+        <button class="nav-link theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark mode"><span id="theme-icon">☾</span> Dark mode</button>
+        <form action="{{ url_for('logout') }}" method="post" class="logout-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+          <button class="nav-link logout-button" type="submit"><span>↪</span> Sign out</button>
+        </form>
+        <div class="profile">
+          <span class="avatar">{{ username[0]|upper }}</span>
+          <span><strong>{{ username }}</strong><small>Personal workspace</small></span>
+          <span class="profile-more">···</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content" id="overview">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobile-menu" type="button" aria-label="Toggle navigation">☰</button>
+        <div class="breadcrumb">Workspace <span>/</span> <strong>Overview</strong></div>
+        <div class="topbar-right">
+          <span class="today-chip"><span class="live-dot"></span><span id="today-label"></span></span>
+          <button class="top-theme icon-button" id="top-theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
+          <button class="notification-toggle icon-button" id="notification-toggle" type="button" aria-label="Open notifications">♧<span class="notification-count" id="notification-count" hidden>0</span></button>
+          <span class="avatar avatar-small">{{ username[0]|upper }}</span>
+        </div>
+      </header>
+      <div class="notification-panel card" id="notification-panel" hidden>
+        <div class="notification-head"><strong>Reminders</strong><button class="small-button" id="refresh-notifications" type="button">Refresh</button></div>
+        <div id="notification-list" class="notification-list"></div>
+      </div>
+
+      <section class="hero" aria-labelledby="welcome-title">
+        <div class="hero-copy">
+          <div class="eyebrow">YOUR SPACE TO MAKE IT HAPPEN</div>
+          <h1 id="welcome-title">Plan Smarter.<br>Track Better. <span>Achieve More.</span></h1>
+          <p>Your projects, progress, and next big opportunity — all in one place.</p>
+          <div class="hero-actions">
+            <button class="hero-button" id="hero-add-project" type="button">＋ &nbsp; Create a project</button>
+            <span class="hero-note">✦ &nbsp;One step at a time</span>
+          </div>
+        </div>
+        <div class="hero-progress">
+          <div class="hero-ring" id="overall-ring"><span id="overall-percent">0%</span></div>
+          <div><strong>Overall progress</strong><small id="overall-count">0 of 0 tasks complete</small></div>
+          <div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div>
+        </div>
+        <div class="hero-decoration deco-one"></div><div class="hero-decoration deco-two"></div>
+      </section>
+
+      <section class="stat-grid" aria-label="Dashboard summary">
+        <article class="card stat-card stat-purple"><div class="stat-top"><span class="stat-icon">▦</span><span class="stat-trend">IN MOTION</span></div><div class="stat-number" id="stat-projects">0</div><div class="stat-label">Active projects</div><div class="stat-foot" id="stat-tasks">0 tasks across your projects</div></article>
+        <article class="card stat-card stat-pink"><div class="stat-top"><span class="stat-icon">✓</span><span class="stat-trend">KEEP GOING</span></div><div class="stat-number" id="stat-completed">0</div><div class="stat-label">Tasks completed</div><div class="stat-foot" id="stat-remaining">0 left to tackle</div></article>
+        <article class="card stat-card stat-blue"><div class="stat-top"><span class="stat-icon">↗</span><span class="stat-trend">CAREER MOVES</span></div><div class="stat-number" id="stat-applications">0</div><div class="stat-label">Job applications</div><div class="stat-foot" id="stat-interviews">0 interviews in progress</div></article>
+        <article class="card stat-card stat-orange"><div class="stat-top"><span class="stat-icon">✦</span><span class="stat-trend">GOOD NEWS</span></div><div class="stat-number" id="stat-offers">0</div><div class="stat-label">Offers received</div><div class="stat-foot">Your next opportunity is out there</div></article>
+      </section>
+
+      <section class="section-block" id="projects" aria-labelledby="projects-title">
+        <div class="section-heading">
+          <div><div class="section-kicker">MAKE IT HAPPEN</div><h2 id="projects-title">Your projects</h2><p>Keep the big picture in sight and the next step within reach.</p></div>
+          <button class="primary-button" id="add-project" type="button">＋ &nbsp;New project</button>
+        </div>
+        <div class="planner-toolbar">
+          <div class="view-controls" role="group" aria-label="Planning view">
+            <button class="view-button" type="button" data-view="day" aria-pressed="false">Day</button>
+            <button class="view-button" type="button" data-view="week" aria-pressed="false">Week</button>
+            <button class="view-button" type="button" data-view="month" aria-pressed="true">Month</button>
+          </div>
+          <div class="date-controls">
+            <button class="date-button" id="previous-period" type="button" aria-label="Previous period">‹</button>
+            <span class="date-label" id="period-label"></span>
+            <button class="date-button" id="next-period" type="button" aria-label="Next period">›</button>
+            <button class="view-button" id="today-button" type="button">Today</button>
+          </div>
+          <span class="tiny-label" id="project-summary">Loading your workspace…</span>
+        </div>
+        <div class="planner-projects" id="planner-projects" aria-live="polite"></div>
+      </section>
+
+      <section class="section-block" id="calendar" aria-labelledby="calendar-title">
+        <div class="section-heading">
+          <div><div class="section-kicker">DATES THAT MATTER</div><h2 id="calendar-title">Calendar</h2><p>Deadlines, milestones, and interviews in one view.</p></div>
+          <button class="primary-button" id="add-milestone" type="button">＋ &nbsp;Add milestone</button>
+        </div>
+        <div class="card calendar-card">
+          <div class="calendar-toolbar">
+            <div class="view-controls" role="group" aria-label="Calendar view">
+              <button class="view-button calendar-view-button" data-calendar-view="month" type="button" aria-pressed="true">Month</button>
+              <button class="view-button calendar-view-button" data-calendar-view="week" type="button" aria-pressed="false">Week</button>
+            </div>
+            <div class="date-controls">
+              <button class="date-button" id="calendar-previous" type="button" aria-label="Previous calendar period">‹</button>
+              <span class="date-label" id="calendar-label"></span>
+              <button class="date-button" id="calendar-next" type="button" aria-label="Next calendar period">›</button>
+              <button class="view-button" id="calendar-today" type="button">Today</button>
+            </div>
+          </div>
+          <div class="calendar-legend"><span><i class="legend-task"></i>Task</span><span><i class="legend-project"></i>Project deadline</span><span><i class="legend-milestone"></i>Milestone</span><span><i class="legend-interview"></i>Interview</span></div>
+          <div class="calendar-grid" id="calendar-grid" aria-live="polite"></div>
+          <p class="calendar-hint">Select a date to create a task for that day.</p>
+        </div>
+      </section>
+
+      <section class="section-block" id="kanban" aria-labelledby="kanban-title">
+        <div class="section-heading">
+          <div><div class="section-kicker">SEE THE NEXT STEP</div><h2 id="kanban-title">Task board</h2><p>Drag tasks between columns to update their status.</p></div>
+          <button class="primary-button" id="kanban-add-task" type="button">＋ &nbsp;New task</button>
+        </div>
+        <div class="kanban-board" id="kanban-board" aria-live="polite"></div>
+      </section>
+
+      <section class="section-block" id="applications" aria-labelledby="applications-title">
+        <div class="section-heading">
+          <div><div class="section-kicker">YOUR NEXT CHAPTER</div><h2 id="applications-title">Career tracker <span aria-hidden="true">💼</span></h2><p>Stay on top of each opportunity, from application to offer.</p></div>
+          <button class="primary-button" id="add-application" type="button">＋ &nbsp;Add application</button>
+        </div>
+        <div class="applications-layout">
+          <div class="card application-card">
+            <div class="table-top"><h3>Recent applications</h3><span class="table-caption">Your career, in motion</span></div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr><th>Company</th><th>Role</th><th>Date applied</th><th>Status</th><th aria-label="Actions"></th></tr></thead>
+                <tbody id="application-rows"></tbody>
+              </table>
+              <div class="empty-state" id="application-empty" hidden>No applications yet — add your first opportunity ✨</div>
+            </div>
+          </div>
+          <div class="career-summary">
+            <article class="card mini-stat"><span class="mini-icon mini-interview">✦</span><div><small>Interviews</small><strong id="summary-interviews">0</strong><span>Doors are opening</span></div></article>
+            <article class="card mini-stat"><span class="mini-icon mini-offer">🎉</span><div><small>Offers</small><strong id="summary-offers">0</strong><span>Celebrate every win</span></div></article>
+            <article class="card mini-stat"><span class="mini-icon mini-rejected">↻</span><div><small>Applications</small><strong id="summary-applications">0</strong><span>Every step counts</span></div></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-block" id="insights" aria-labelledby="insights-title">
+        <div class="section-heading"><div><div class="section-kicker">A LITTLE PERSPECTIVE</div><h2 id="insights-title">Your progress, at a glance</h2><p>Celebrate the momentum you’re building.</p></div><span class="tiny-label">LIVE DASHBOARD</span></div>
+        <div class="chart-grid analytics-grid">
+          <article class="card chart-card"><h3 class="chart-title">Application pipeline</h3><p class="chart-subtitle">Where your opportunities stand</p><div class="chart-wrap"><canvas id="application-chart" aria-label="Job application status chart"></canvas></div></article>
+          <article class="card chart-card"><h3 class="chart-title">Task momentum</h3><p class="chart-subtitle">Completed vs. remaining tasks</p><div class="chart-wrap"><canvas id="task-chart" aria-label="Completed and remaining tasks chart"></canvas></div></article>
+          <article class="card chart-card"><h3 class="chart-title">Weekly completions</h3><p class="chart-subtitle">Tasks completed per week, based on saved completion dates</p><div class="chart-wrap"><canvas id="weekly-chart" aria-label="Weekly task completions chart"></canvas></div></article>
+          <article class="card chart-card"><h3 class="chart-title">Monthly completions</h3><p class="chart-subtitle">Tasks completed per month</p><div class="chart-wrap"><canvas id="monthly-chart" aria-label="Monthly task completions chart"></canvas></div></article>
+        </div>
+        <div class="analytics-summary" id="analytics-summary"></div>
+      </section>
+
+      <section class="section-block" id="career-assistant" aria-labelledby="career-title">
+        <div class="section-heading"><div><div class="section-kicker">LOCAL, EXPLAINABLE GUIDANCE</div><h2 id="career-title">AI Career Assistant</h2><p>Personalized, local skill matching — no paid APIs or generated credentials.</p></div></div>
+        <div class="career-layout">
+          <form class="card career-form" id="career-form">
+            <div class="field"><label for="career-role">Career goal</label><select id="career-role" name="targetRole"><option>Data Analyst</option><option>Python Developer</option><option>Frontend Developer</option><option>Full Stack Developer</option><option>AI Developer</option></select></div>
+            <div class="field"><label for="career-experience">Experience level</label><select id="career-experience" name="experienceLevel"><option>Beginner</option><option>Intermediate</option><option>Experienced</option></select></div>
+            <div class="field"><label for="career-skills">Your skills <small>Comma-separated; list skills you can demonstrate.</small></label><textarea id="career-skills" name="skills" rows="3" maxlength="2000" placeholder="Python, SQL, Excel..."></textarea></div>
+            <div class="field"><label for="career-goals">Career goals</label><textarea id="career-goals" name="careerGoals" rows="2" maxlength="1200" placeholder="What kind of work would you like to grow into?"></textarea></div>
+            <div class="field"><label for="career-improve">Skills to improve</label><input id="career-improve" name="improveSkills" maxlength="500" placeholder="Statistics, communication"></div>
+            <div class="field"><label for="career-job-description">Job description <small>Optional. Used for a local keyword-based match.</small></label><textarea id="career-job-description" name="jobDescription" rows="5" maxlength="12000" placeholder="Paste a job description to compare its stated skills with yours."></textarea></div>
+            <button class="primary-button" type="submit">Build my career roadmap</button>
+          </form>
+          <div class="career-results">
+            <article class="card career-result-card"><h3>Skill gap &amp; job match</h3><div id="career-analysis" class="career-placeholder">Complete your career profile to see skill matches and learning priorities.</div></article>
+            <article class="card career-result-card"><h3>Resume feedback</h3><p class="chart-subtitle">Paste text only; your resume content is not stored.</p><form id="resume-form"><textarea id="resume-text" rows="5" maxlength="20000" placeholder="Paste resume text for local structural feedback..."></textarea><button class="secondary-button" type="submit">Review resume text</button></form><div id="resume-feedback" class="career-placeholder"></div></article>
+            <article class="card career-result-card"><h3>Interview preparation</h3><div id="interview-questions" class="career-placeholder">Choose a target role to get locally stored practice questions.</div></article>
+          </div>
+        </div>
+        <p class="career-disclaimer">Career results are transparent, heuristic suggestions based on text and a small built-in skill vocabulary. They are not hiring predictions or professional advice.</p>
+      </section>
+      <footer class="footer">Trackly <span>✦</span> Plan Smarter. Track Better. Achieve More.</footer>
+    </main>
+  </div>
+
+  <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
+
+  <dialog class="app-dialog" id="project-dialog" aria-labelledby="project-dialog-title">
+    <form class="dialog-inner" id="project-form">
+      <div class="dialog-heading"><div><span class="dialog-kicker">A FRESH START</span><h3 id="project-dialog-title">Create a project ✨</h3></div><button class="dialog-x" type="button" data-close-dialog="project-dialog" aria-label="Close dialog">×</button></div>
+      <div class="field"><label for="project-name">Project name</label><input id="project-name" name="name" required maxlength="90" placeholder="e.g. Customer insights"></div>
+      <div class="field-row"><div class="field"><label for="project-start">Start date</label><input id="project-start" name="startDate" type="date"></div><div class="field"><label for="project-deadline">Deadline</label><input id="project-deadline" name="deadline" type="date"></div></div>
+      <div class="field"><label for="project-priority">Priority</label><select id="project-priority" name="priority"><option>Low</option><option selected>Medium</option><option>High</option></select></div>
+      <div class="dialog-actions"><button class="secondary-button" type="button" data-close-dialog="project-dialog">Cancel</button><button class="primary-button" type="submit">Save project</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog" id="task-dialog" aria-labelledby="task-dialog-title">
+    <form class="dialog-inner" id="task-form">
+      <div class="dialog-heading"><div><span class="dialog-kicker">ONE THING AT A TIME</span><h3 id="task-dialog-title">Add a task ✨</h3></div><button class="dialog-x" type="button" data-close-dialog="task-dialog" aria-label="Close dialog">×</button></div>
+      <div class="field"><label for="task-title">Task</label><input id="task-title" name="title" required maxlength="120" placeholder="What would you like to do?"></div>
+      <div class="field-row"><div class="field"><label for="task-deadline">Due date</label><input id="task-deadline" name="dueDate" type="date"></div><div class="field"><label for="task-priority">Priority</label><select id="task-priority" name="priority"><option>Low</option><option selected>Medium</option><option>High</option></select></div></div>
+      <div class="field"><label for="task-status">Status</label><select id="task-status" name="status"><option>To Do</option><option>In Progress</option><option>Completed</option></select></div>
+      <div class="dialog-actions"><button class="secondary-button" type="button" data-close-dialog="task-dialog">Cancel</button><button class="primary-button" type="submit">Save task</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog" id="application-dialog" aria-labelledby="application-dialog-title">
+    <form class="dialog-inner" id="application-form">
+      <div class="dialog-heading"><div><span class="dialog-kicker">MAKE YOUR NEXT MOVE</span><h3 id="application-dialog-title">Add an application ✨</h3></div><button class="dialog-x" type="button" data-close-dialog="application-dialog" aria-label="Close dialog">×</button></div>
+      <div class="field"><label for="company-input">Company</label><input id="company-input" name="company" required maxlength="70" placeholder="e.g. Acme Studio"></div>
+      <div class="field"><label for="role-input">Role</label><input id="role-input" name="role" required maxlength="70" placeholder="e.g. Junior Data Analyst"></div>
+      <div class="field-row"><div class="field"><label for="date-input">Date applied</label><input id="date-input" name="date" type="date" required></div><div class="field"><label for="status-input">Status</label><select id="status-input" name="status"><option>Applied</option><option>Interview</option><option>Offer</option><option>Rejected</option></select></div></div>
+      <div class="field"><label for="interview-date-input">Interview date <small>Optional calendar reminder.</small></label><input id="interview-date-input" name="interviewDate" type="date"></div>
+      <div class="dialog-actions"><button class="secondary-button" type="button" data-close-dialog="application-dialog">Cancel</button><button class="primary-button" type="submit">Save application</button></div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog" id="milestone-dialog" aria-labelledby="milestone-dialog-title">
+    <form class="dialog-inner" id="milestone-form">
+      <div class="dialog-heading"><div><span class="dialog-kicker">A PROJECT CHECKPOINT</span><h3 id="milestone-dialog-title">Add a milestone ✨</h3></div><button class="dialog-x" type="button" data-close-dialog="milestone-dialog" aria-label="Close dialog">×</button></div>
+      <div class="field"><label for="milestone-project">Project</label><select id="milestone-project" name="projectId" required></select></div>
+      <div class="field"><label for="milestone-title">Milestone</label><input id="milestone-title" name="title" required maxlength="100" placeholder="e.g. First dashboard review"></div>
+      <div class="field"><label for="milestone-date">Date</label><input id="milestone-date" name="dueDate" type="date" required></div>
+      <div class="dialog-actions"><button class="secondary-button" type="button" data-close-dialog="milestone-dialog">Cancel</button><button class="primary-button" type="submit">Save milestone</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
