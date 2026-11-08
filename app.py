@@ -783,6 +783,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     def logout():
         session.clear()
         logout_user()
+        flash("You have been signed out.", "success")
         return redirect(url_for("login"))
 
     def payload() -> dict[str, Any] | None:

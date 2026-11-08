@@ -59,7 +59,32 @@
           <span class="today-chip"><span class="live-dot"></span><span id="today-label"></span></span>
           <button class="top-theme icon-button" id="top-theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
           <button class="notification-toggle icon-button" id="notification-toggle" type="button" aria-label="Open notifications">♧<span class="notification-count" id="notification-count" hidden>0</span></button>
-          <span class="avatar avatar-small">{{ username[0]|upper }}</span>
+          <div class="profile-dropdown" id="profile-dropdown">
+            <button
+              type="button"
+              class="avatar avatar-small profile-trigger"
+              id="profile-trigger"
+              aria-label="Open profile menu"
+              aria-expanded="false"
+              aria-controls="profile-menu">
+              {{ username[0]|upper }}
+            </button>
+            <div class="profile-menu" id="profile-menu" hidden>
+              <div class="profile-menu-header">
+                <strong>{{ username }}</strong>
+                <small>Personal Workspace</small>
+              </div>
+              <a href="#overview" class="profile-menu-link" id="profile-workspace-link">
+                <span aria-hidden="true">⌂</span> My Workspace
+              </a>
+              <form action="{{ url_for('logout') }}" method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token_value }}">
+                <button type="submit" class="profile-menu-link profile-signout">
+                  <span aria-hidden="true">↪</span> Sign Out
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </header>
       <div class="notification-panel card" id="notification-panel" hidden>

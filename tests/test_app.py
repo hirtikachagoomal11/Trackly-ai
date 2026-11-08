@@ -121,14 +121,28 @@ class TracklyApiTests(unittest.TestCase):
         anonymous = self.app.test_client()
         page = anonymous.get("/login")
         self.assertEqual(page.status_code, 200)
+        self.assertIn(b"Email address", page.data)
+        self.assertIn(b'placeholder="you@example.com"', page.data)
         self.assertIn(b'value="demo@trackly.ai"', page.data)
         self.assertIn(b'value="TracklyDemo2026!"', page.data)
-        self.assertIn(b"Sign up", page.data)
+        self.assertIn(b"Create an account", page.data)
         self.assertIn(b'name="remember_me"', page.data)
-        self.assertNotIn(b"Try Demo Account", page.data)
+        self.assertIn(b"Demo Account", page.data)
+        self.assertRegex(
+            page.data,
+            rb'<dd id="demo-email-value">\s*demo@trackly\.ai\s*</dd>',
+        )
+        self.assertRegex(
+            page.data,
+            rb'<dd id="demo-password-value">\s*TracklyDemo2026!\s*</dd>',
+        )
+        self.assertIn(b'id="use-demo-account"', page.data)
         scripts = re.findall(rb"<script>(.*?)</script>", page.data, re.DOTALL)
         self.assertTrue(scripts)
         self.assertFalse(any(b"TracklyDemo2026!" in script for script in scripts))
+        demo_script = next(script for script in scripts if b"use-demo-account" in script)
+        self.assertIn(b"demo-email-value", demo_script)
+        self.assertIn(b"demo-password-value", demo_script)
 
         demo_client = self.app.test_client()
         signed_in = demo_client.post(
@@ -223,8 +237,64 @@ class TracklyApiTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertIsNotNone(login_client.get_cookie("remember_token"))
-        self.assertEqual(login_client.post("/logout").status_code, 302)
+        self.assertEqual(login_client.get("/logout").status_code, 405)
+        logout_response = login_client.post("/logout")
+        self.assertEqual(logout_response.status_code, 302)
+        self.assertEqual(logout_response.headers["Location"], "/login")
         self.assertEqual(login_client.get("/api/projects").status_code, 401)
+        self.assertEqual(login_client.get("/").status_code, 302)
+
+    def test_dashboard_contains_profile_menu_and_csrf_protected_signout_forms(self):
+        page = self.client.get("/")
+        self.assertEqual(page.status_code, 200)
+        self.assertIn(b'id="profile-trigger"', page.data)
+        self.assertIn(b'id="profile-menu"', page.data)
+        self.assertIn(b"Personal Workspace", page.data)
+        self.assertIn(b"My Workspace", page.data)
+        self.assertIn(b"Sign Out", page.data)
+        self.assertGreaterEqual(
+            page.data.count(b'action="/logout" method="post"'), 2
+        )
+        self.assertGreaterEqual(page.data.count(b'name="csrf_token"'), 2)
+
+    def test_logout_requires_csrf_token_when_protection_is_enabled(self):
+        csrf_app = create_app(
+            {
+                "TESTING": True,
+                "SECRET_KEY": "csrf-logout-secret",
+                "DATABASE": str(self.database_path.parent / "csrf-logout.db"),
+            }
+        )
+        client = csrf_app.test_client()
+        registration_page = client.get("/register")
+        token = re.search(
+            rb'name="csrf_token"\s+value="([^"]+)"', registration_page.data
+        )
+        self.assertIsNotNone(token)
+        client.post(
+            "/register",
+            data={
+                "csrf_token": token.group(1).decode(),
+                "full_name": "Logout Test",
+                "email": "logout@example.com",
+                "password": "safe-test-password",
+                "confirm_password": "safe-test-password",
+            },
+        )
+
+        rejected = client.post("/logout")
+        self.assertEqual(rejected.status_code, 400)
+        dashboard = client.get("/")
+        dashboard_token = re.search(
+            rb'<meta name="csrf-token" content="([^"]+)"', dashboard.data
+        )
+        self.assertIsNotNone(dashboard_token)
+        accepted = client.post(
+            "/logout",
+            headers={"X-CSRFToken": dashboard_token.group(1).decode()},
+        )
+        self.assertEqual(accepted.status_code, 302)
+        self.assertEqual(client.get("/api/projects").status_code, 401)
 
     def test_csrf_rejects_registration_without_token(self):
         csrf_app = create_app(
@@ -236,7 +306,7 @@ class TracklyApiTests(unittest.TestCase):
         )
         csrf_client = csrf_app.test_client()
         page = csrf_client.get("/register")
-        token = re.search(rb'name="csrf_token" value="([^"]+)"', page.data)
+        token = re.search(rb'name="csrf_token"\s+value="([^"]+)"', page.data)
 
         self.assertIsNotNone(token)
         response = csrf_client.post(

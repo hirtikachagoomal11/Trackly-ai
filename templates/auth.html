@@ -120,7 +120,7 @@
 
             <!-- FULL NAME -->
             <div class="field">
-             <label for="email">DEMO LOGIN TEST</label>
+              <label for="full-name">Full name</label>
 
               <input
                 id="full-name"
@@ -150,9 +150,9 @@
 
           {% else %}
 
-            <!-- LOGIN EMAIL: DEMO PRE-FILLED -->
+            <!-- Login accepts the account email and legacy usernames. -->
             <div class="field">
-              <label for="email">Email or username</label>
+              <label for="email">Email address</label>
 
               <input
                 id="email"
@@ -160,9 +160,9 @@
                 type="text"
                 required
                 maxlength="254"
-                autocomplete="username"
-                value="{{ request.form.get('email', 'demo@trackly.ai') }}"
-                placeholder="Enter email or username">
+                autocomplete="email"
+                value="{{ request.form.get('email', demo_email) }}"
+                placeholder="you@example.com">
             </div>
 
           {% endif %}
@@ -182,7 +182,7 @@
                 minlength="{{ 10 if mode == 'register' else 1 }}"
                 maxlength="128"
                 autocomplete="{{ 'new-password' if mode == 'register' else 'current-password' }}"
-                value="{{ '' if mode == 'register' or request.method == 'POST' else 'TracklyDemo2026!' }}"
+                value="{{ '' if mode == 'register' or request.method == 'POST' else demo_password }}"
                 placeholder="{{ 'At least 10 characters' if mode == 'register' else 'Enter your password' }}">
 
               <button
@@ -276,6 +276,31 @@
 
         </form>
 
+        {% if mode == "login" %}
+          <section class="demo-account-card" aria-labelledby="demo-account-title">
+            <div class="demo-account-heading">
+              <span class="demo-account-icon" aria-hidden="true">✦</span>
+              <div>
+                <h2 id="demo-account-title">Demo Account</h2>
+                <p>Explore Trackly with a sample workspace</p>
+              </div>
+            </div>
+            <dl class="demo-account-credentials">
+              <div>
+                <dt>Email</dt>
+                <dd id="demo-email-value">{{ demo_email }}</dd>
+              </div>
+              <div>
+                <dt>Password</dt>
+                <dd id="demo-password-value">{{ demo_password }}</dd>
+              </div>
+            </dl>
+            <button type="button" class="secondary-button demo-account-button" id="use-demo-account">
+              Use Demo Account
+            </button>
+          </section>
+        {% endif %}
+
         <!-- LOGIN / REGISTRATION SWITCH -->
         <p class="auth-switch">
 
@@ -345,6 +370,19 @@
       strengthLabel.textContent = value
         ? `Password strength: ${strengthNames[Math.max(0, score - 1)]}`
         : "Use 10 or more characters for a stronger password.";
+    });
+  </script>
+  {% endif %}
+
+  {% if mode == "login" %}
+  <script>
+    const useDemoAccountButton = document.getElementById("use-demo-account");
+    useDemoAccountButton.addEventListener("click", () => {
+      document.getElementById("email").value =
+        document.getElementById("demo-email-value").textContent.trim();
+      document.getElementById("password").value =
+        document.getElementById("demo-password-value").textContent.trim();
+      document.getElementById("email").focus();
     });
   </script>
   {% endif %}

@@ -737,6 +737,33 @@ function bindForm(formId, submit) {
 }
 
 function bindEvents() {
+  const profileTrigger = byId("profile-trigger");
+  const profileMenu = byId("profile-menu");
+  const profileDropdown = byId("profile-dropdown");
+  const setProfileMenuOpen = open => {
+    profileMenu.hidden = !open;
+    profileTrigger.setAttribute("aria-expanded", String(open));
+    profileTrigger.setAttribute(
+      "aria-label",
+      open ? "Close profile menu" : "Open profile menu"
+    );
+  };
+  profileTrigger.addEventListener("click", () => {
+    setProfileMenuOpen(profileMenu.hidden);
+  });
+  document.addEventListener("pointerdown", event => {
+    if (!profileDropdown.contains(event.target)) setProfileMenuOpen(false);
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && !profileMenu.hidden) {
+      setProfileMenuOpen(false);
+      profileTrigger.focus();
+    }
+  });
+  byId("profile-workspace-link").addEventListener("click", () => {
+    setProfileMenuOpen(false);
+  });
+
   byId("add-project").addEventListener("click", () => openProjectDialog());
   byId("hero-add-project").addEventListener("click", () => openProjectDialog());
   byId("add-application").addEventListener("click", () => openApplicationDialog());
